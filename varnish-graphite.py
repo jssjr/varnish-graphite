@@ -4,6 +4,7 @@
 #
 # Collect statistics from Varnish, format them, and send them to Graphite.
 
+import argparse
 import json
 import signal
 import socket
@@ -11,10 +12,6 @@ import string
 import subprocess
 import time
 
-GRAPHITE_HOST = "graphite.dca1.rws"
-GRAPHITE_PORT = 2003
-# Ethernet - (IPv6 + TCP) = 1500 - (40 + 32) = 1428
-BUFFER_SIZE   = 1428
 
 def parse_varnishstat():
   return json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
@@ -29,10 +26,9 @@ def format_stat(title, metric, timestamp, prefix = None):
   return "{} {} {}".format(name, metric, timestamp)
 
 
-def report_status():
+def report_status(prefix):
   stats  = parse_varnishstat()
   ts     = int(time.time())
-  prefix = "varnish.production"
 
   status = []
   # Cache
@@ -62,16 +58,24 @@ def report_status():
 
 
 def main():
+  parser = argparse.ArgumentParser(description='Collect and stream Varnish statistics to Graphite.')
+  parser.add_argument('-H', '--host', default='127.0.0.1')
+  parser.add_argument('-p', '--port', default=2003)
+  parser.add_argument('-P', '--prefix', default='varnish')
+  # Ethernet - (IPv6 + TCP) = 1500 - (40 + 32) = 1428
+  parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
+  args = parser.parse_args()
+
   client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  client.connect((GRAPHITE_HOST, GRAPHITE_PORT))
+  client.connect((args.host, args.port))
 
   send_buffer = ""
 
   while True:
-    status = report_status()
+    status = report_status(args.prefix)
     for s in status:
-      if len(send_buffer) + len(s) > BUFFER_SIZE:
-        print "Sending {} bytes to {}".format(len(send_buffer), "{}:{}".format(GRAPHITE_HOST, GRAPHITE_PORT))
+      if len(send_buffer) + len(s) > args.buffer_size:
+        print "Sending {} bytes to {}".format(len(send_buffer), "{}:{}".format(args.host, args.port))
         client.send(send_buffer)
         send_buffer = ""
       send_buffer += "{}\n".format(s)

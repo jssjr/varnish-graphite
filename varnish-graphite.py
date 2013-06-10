@@ -13,6 +13,35 @@ import subprocess
 import time
 
 
+class GraphiteClient:
+  sendbuf = ''
+
+  def __init__(self, host='127.0.0.1', port=2003, prefix='varnish', buffer_size=1428):
+    self.prefix = prefix
+    self.host   = host
+    self.port   = port
+    self.buffer_size = buffer_size
+
+    self.connect()
+
+  def connect(self):
+    self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.sock.connect((self.host, self.port))
+    print("Connected to {}:{}".format(self.host, self.port))
+
+  def send_metrics(self, metrics):
+    for stat in metrics:
+      if len(self.sendbuf) + len(stat) > self.buffer_size:
+        print("Sending {} bytes to {}".format(len(self.sendbuf), "{}:{}".format(self.host, self.port)))
+        self.sock.send(self.sendbuf)
+        self.sendbuf = ''
+      self.sendbuf += "{}\n".format(stat)
+
+  def disconnect(self):
+    self.sock.close()
+    print("Disconnected from {}:{}".format(self.host, self.port))
+
+
 def parse_varnishstat():
   return json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
 
@@ -66,23 +95,16 @@ def main():
   parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
   args = parser.parse_args()
 
-  client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  client.connect((args.host, args.port))
+  c = GraphiteClient(args.host, args.port, args.prefix)
 
   send_buffer = ""
 
-  while True:
-    status = report_status(args.prefix)
-    for s in status:
-      if len(send_buffer) + len(s) > args.buffer_size:
-        print "Sending {} bytes to {}".format(len(send_buffer), "{}:{}".format(args.host, args.port))
-        client.send(send_buffer)
-        send_buffer = ""
-      send_buffer += "{}\n".format(s)
-
-    time.sleep(10)
-
-  s.close()
+  try:
+    while True:
+      c.send_metrics(report_status(args.prefix))
+      time.sleep(10)
+  except KeyboardInterrupt:
+    c.disconnect();
 
 if __name__ == "__main__":
   main()

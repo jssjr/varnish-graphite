@@ -5,7 +5,7 @@ Small Python script for sending Varnish statistics to Graphite
 ## Usage
 
 ```
-usage: varnish-graphite.py [-h] [-H HOST] [-p PORT] [-P PREFIX]
+usage: varnish-graphite [-h] [-H HOST] [-p PORT] [-P PREFIX]
                            [-b BUFFER_SIZE]
 
 Collect and stream Varnish statistics to Graphite.

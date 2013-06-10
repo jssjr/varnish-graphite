@@ -43,11 +43,11 @@ class GraphiteClient:
 
 
 def collect_metrics():
-  stats  = json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
-  ts     = int(time.time())
+  varnish_stats = json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
+  timestamp     = int(time.time())
 
   status = []
-  fmt = lambda x, y: "{} {} {}".format(x, stats[y]['value'], ts)
+  fmt = lambda x, y: "{} {} {}".format(x, varnish_stats[y]['value'], timestamp)
 
   metrics = [('cache.hit', 'cache_hit'),
              ('cache.hitpass', 'cache_hitpass'),

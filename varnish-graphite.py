@@ -53,28 +53,26 @@ def collect_metrics():
   status = []
   fmt = lambda x, y: "{} {} {}".format(x, stats[y]['value'], ts)
 
-  # Cache
-  status.append(fmt('cache.hit', 'cache_hit'))
-  status.append(fmt('cache.hitpass', 'cache_hitpass'))
-  status.append(fmt('cache.miss', 'cache_miss'))
+  metrics = [('cache.hit', 'cache_hit'),
+             ('cache.hitpass', 'cache_hitpass'),
+             ('cache.miss', 'cache_miss'),
+             ('backend.conn', 'backend_conn'),
+             ('backend.unhealthy', 'backend_unhealthy'),
+             ('backend.busy', 'backend_busy'),
+             ('backend.fail', 'backend_fail'),
+             ('backend.reuse', 'backend_reuse'),
+             ('backend.toolate', 'backend_toolate'),
+             ('backend.recycle', 'backend_recycle'),
+             ('backend.retry', 'backend_retry'),
+             ('backend.req', 'backend_req'),
+             ('client.conn', 'client_conn'),
+             ('client.drop', 'client_drop'),
+             ('client.req', 'client_req'),
+             ('client.hdrbytes', 's_hdrbytes'),
+             ('client.bodybytes', 's_bodybytes')]
 
-  # Origin
-  status.append(fmt('backend.conn', 'backend_conn'))
-  status.append(fmt('backend.unhealthy', 'backend_unhealthy'))
-  status.append(fmt('backend.busy', 'backend_busy'))
-  status.append(fmt('backend.fail', 'backend_fail'))
-  status.append(fmt('backend.reuse', 'backend_reuse'))
-  status.append(fmt('backend.toolate', 'backend_toolate'))
-  status.append(fmt('backend.recycle', 'backend_recycle'))
-  status.append(fmt('backend.retry', 'backend_retry'))
-  status.append(fmt('backend.req', 'backend_req'))
-
-  # Client
-  status.append(fmt('client.conn', 'client_conn'))
-  status.append(fmt('client.drop', 'client_drop'))
-  status.append(fmt('client.req', 'client_req'))
-  status.append(fmt('client.hdrbytes', 's_hdrbytes'))
-  status.append(fmt('client.bodybytes', 's_bodybytes'))
+  for (name, metric) in metrics:
+    status.append(fmt(name, metric))
 
   return status
 
@@ -89,8 +87,6 @@ def main():
   args = parser.parse_args()
 
   c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
-
-  send_buffer = ""
 
   try:
     while True:

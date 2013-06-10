@@ -6,11 +6,9 @@
 
 import argparse
 import json
-import signal
 import socket
-import string
-import subprocess
-import time
+from subprocess import check_output
+from time import time, sleep
 
 
 class GraphiteClient:
@@ -43,8 +41,8 @@ class GraphiteClient:
 
 
 def collect_metrics():
-  varnish_stats = json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
-  timestamp     = int(time.time())
+  varnish_stats = json.loads(check_output(['varnishstat', '-1', '-j']))
+  timestamp     = int(time())
 
   status = []
   fmt = lambda x, y: "{} {} {}".format(x, varnish_stats[y]['value'], timestamp)
@@ -87,7 +85,7 @@ def main():
     c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
     while True:
       c.send_metrics(collect_metrics())
-      time.sleep(float(args.interval))
+      sleep(float(args.interval))
   except KeyboardInterrupt:
     c.disconnect();
 

@@ -51,30 +51,30 @@ def collect_metrics():
   ts     = int(time.time())
 
   status = []
-  fmt = lambda x, y, z: "{} {} {}".format(x, stats[y]['value'], ts)
+  fmt = lambda x, y: "{} {} {}".format(x, stats[y]['value'], ts)
 
   # Cache
-  status.append(fmt('cache.hit', 'cache_hit', ts))
-  status.append(fmt('cache.hitpass', 'cache_hitpass', ts))
-  status.append(fmt('cache.miss', 'cache_miss', ts))
+  status.append(fmt('cache.hit', 'cache_hit'))
+  status.append(fmt('cache.hitpass', 'cache_hitpass'))
+  status.append(fmt('cache.miss', 'cache_miss'))
 
   # Origin
-  status.append(fmt('backend.conn', 'backend_conn', ts))
-  status.append(fmt('backend.unhealthy', 'backend_unhealthy', ts))
-  status.append(fmt('backend.busy', 'backend_busy', ts))
-  status.append(fmt('backend.fail', 'backend_fail', ts))
-  status.append(fmt('backend.reuse', 'backend_reuse', ts))
-  status.append(fmt('backend.toolate', 'backend_toolate', ts))
-  status.append(fmt('backend.recycle', 'backend_recycle', ts))
-  status.append(fmt('backend.retry', 'backend_retry', ts))
-  status.append(fmt('backend.req', 'backend_req', ts))
+  status.append(fmt('backend.conn', 'backend_conn'))
+  status.append(fmt('backend.unhealthy', 'backend_unhealthy'))
+  status.append(fmt('backend.busy', 'backend_busy'))
+  status.append(fmt('backend.fail', 'backend_fail'))
+  status.append(fmt('backend.reuse', 'backend_reuse'))
+  status.append(fmt('backend.toolate', 'backend_toolate'))
+  status.append(fmt('backend.recycle', 'backend_recycle'))
+  status.append(fmt('backend.retry', 'backend_retry'))
+  status.append(fmt('backend.req', 'backend_req'))
 
   # Client
-  status.append(fmt('client.conn', 'client_conn', ts))
-  status.append(fmt('client.drop', 'client_drop', ts))
-  status.append(fmt('client.req', 'client_req', ts))
-  status.append(fmt('client.hdrbytes', 's_hdrbytes', ts))
-  status.append(fmt('client.bodybytes', 's_bodybytes', ts))
+  status.append(fmt('client.conn', 'client_conn'))
+  status.append(fmt('client.drop', 'client_drop'))
+  status.append(fmt('client.req', 'client_req'))
+  status.append(fmt('client.hdrbytes', 's_hdrbytes'))
+  status.append(fmt('client.bodybytes', 's_bodybytes'))
 
   return status
 

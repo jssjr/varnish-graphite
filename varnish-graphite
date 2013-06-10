@@ -83,9 +83,8 @@ def main():
   parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
   args = parser.parse_args()
 
-  c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
-
   try:
+    c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
     while True:
       c.send_metrics(collect_metrics())
       time.sleep(float(args.interval))

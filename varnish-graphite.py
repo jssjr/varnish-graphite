@@ -88,7 +88,7 @@ def main():
   parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
   args = parser.parse_args()
 
-  c = GraphiteClient(args.host, args.port, args.prefix)
+  c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
 
   send_buffer = ""
 

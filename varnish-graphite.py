@@ -42,12 +42,8 @@ class GraphiteClient:
     print("Disconnected from {}:{}".format(self.host, self.port))
 
 
-def parse_varnishstat():
-  return json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
-
-
 def collect_metrics():
-  stats  = parse_varnishstat()
+  stats  = json.loads(subprocess.check_output(['varnishstat', '-1', '-j']))
   ts     = int(time.time())
 
   status = []

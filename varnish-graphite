@@ -78,6 +78,7 @@ def main():
   parser.add_argument('-H', '--host', default='127.0.0.1')
   parser.add_argument('-p', '--port', default=2003)
   parser.add_argument('-P', '--prefix', default='varnish')
+  parser.add_argument('-i', '--interval', default=10)
   # Ethernet - (IPv6 + TCP) = 1500 - (40 + 32) = 1428
   parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
   args = parser.parse_args()
@@ -87,7 +88,7 @@ def main():
   try:
     while True:
       c.send_metrics(collect_metrics())
-      time.sleep(10)
+      time.sleep(float(args.interval))
   except KeyboardInterrupt:
     c.disconnect();
 

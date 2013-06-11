@@ -31,8 +31,12 @@ class GraphiteClient:
     for stat in metrics:
       if len(self.sendbuf) + len("{}.{}".format(self.prefix, stat)) > self.buffer_size:
         print("Sending {} bytes to {}".format(len(self.sendbuf), "{}:{}".format(self.host, self.port)))
-        self.sock.send(self.sendbuf)
-        self.sendbuf = ''
+        try:
+          self.sock.send(self.sendbuf)
+          self.sendbuf = ''
+        except socket.error:
+          print("Lost connection to {}:{}".format(self.host, self.port))
+          self.connect()
       self.sendbuf += "{}.{}\n".format(self.prefix, stat)
 
   def disconnect(self):

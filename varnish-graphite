@@ -14,12 +14,13 @@ from time import time, sleep
 class GraphiteClient:
   sendbuf = ''
 
-  def __init__(self, host='127.0.0.1', port=2003, prefix='varnish', buffer_size=1428):
+  def __init__(self, host='127.0.0.1', port=2003, prefix='varnish', buffer_size=1428, max_buffer_size=33554432):
     self.prefix = prefix
     self.host   = host
     self.port   = port
     self.sock   = None
     self.buffer_size = buffer_size
+    self.max_buffer_size = max_buffer_size
 
     self.connect()
 
@@ -51,7 +52,8 @@ class GraphiteClient:
         except socket.error:
           print("Lost connection to {}:{}".format(self.host, self.port))
           self.reconnect()
-      self.sendbuf += "{}.{}\n".format(self.prefix, stat)
+      if len(self.sendbuf) + len("{}.{}".format(self.prefix, stat)) < int(self.max_buffer_size):
+        self.sendbuf += "{}.{}\n".format(self.prefix, stat)
 
   def disconnect(self):
     if self.sock != None:
@@ -102,10 +104,12 @@ def main():
   parser.add_argument('-i', '--interval', default=10)
   # Ethernet - (IPv6 + TCP) = 1500 - (40 + 32) = 1428
   parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
+  # Default 32M max buffer size. Discard anything extra if we aren't able to send.
+  parser.add_argument('-B', '--max-buffer-size', dest='max_buffer_size', default=33554432)
   args = parser.parse_args()
 
   try:
-    c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
+    c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size, args.max_buffer_size)
     while True:
       interval_start = time()
 

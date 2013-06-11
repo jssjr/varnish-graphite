@@ -18,31 +18,50 @@ class GraphiteClient:
     self.prefix = prefix
     self.host   = host
     self.port   = port
+    self.sock   = None
     self.buffer_size = buffer_size
 
     self.connect()
 
   def connect(self):
-    self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.sock.connect((self.host, self.port))
-    print("Connected to {}:{}".format(self.host, self.port))
+    if self.sock == None:
+      try:
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      except socket.error:
+        self.sock = None
+        print("Connection failed. Re-trying on the next interval")
+      try:
+        self.sock.connect((self.host, self.port))
+      except socket.error:
+        self.sock.close()
+        self.sock = None
+        print("Connection failed. Re-trying on the next interval")
+    if self.sock != None:
+      print("Connected to {}:{}".format(self.host, self.port))
 
   def send_metrics(self, metrics):
+    if self.sock == None:
+      self.connect()
     for stat in metrics:
-      if len(self.sendbuf) + len("{}.{}".format(self.prefix, stat)) > self.buffer_size:
+      if self.sock != None and len(self.sendbuf) + len("{}.{}".format(self.prefix, stat)) > self.buffer_size:
         print("Sending {} bytes to {}".format(len(self.sendbuf), "{}:{}".format(self.host, self.port)))
         try:
           self.sock.send(self.sendbuf)
           self.sendbuf = ''
         except socket.error:
           print("Lost connection to {}:{}".format(self.host, self.port))
-          self.connect()
+          self.reconnect()
       self.sendbuf += "{}.{}\n".format(self.prefix, stat)
 
   def disconnect(self):
-    self.sock.close()
+    if self.sock != None:
+      self.sock.close()
+    self.sock = None
     print("Disconnected from {}:{}".format(self.host, self.port))
 
+  def reconnect(self):
+    self.disconnect()
+    self.connect()
 
 def collect_metrics():
   varnish_stats = json.loads(check_output(['varnishstat', '-1', '-j']))
@@ -93,7 +112,8 @@ def main():
       c.send_metrics(collect_metrics())
 
       interval_used = time() - interval_start
-      sleep(float(args.interval) - interval_used)
+      if interval_used < float(args.interval):
+        sleep(float(args.interval) - interval_used)
   except KeyboardInterrupt:
     c.disconnect();
 

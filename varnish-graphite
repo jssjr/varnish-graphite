@@ -97,15 +97,30 @@ def collect_metrics():
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Collect and stream Varnish statistics to Graphite.')
-  parser.add_argument('-H', '--host', default='127.0.0.1')
-  parser.add_argument('-p', '--port', default=2003)
-  parser.add_argument('-P', '--prefix', default='varnish')
-  parser.add_argument('-i', '--interval', default=10)
+  parser = argparse.ArgumentParser(
+      description='Collect and stream Varnish statistics to Graphite.',
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+  parser.add_argument('-H', '--host',
+      default='127.0.0.1',
+      help='The graphite server host')
+  parser.add_argument('-p', '--port',
+      default=2003,
+      help='The graphite server port')
+  parser.add_argument('-P', '--prefix',
+      default='varnish',
+      help='The prefix for metric names')
+  parser.add_argument('-i', '--interval',
+      default=10,
+      help='The collection interval in seconds')
   # Ethernet - (IPv6 + TCP) = 1500 - (40 + 32) = 1428
-  parser.add_argument('-b', '--buffer-size', dest='buffer_size', default=1428)
+  parser.add_argument('-b', '--buffer-size', dest='buffer_size',
+      default=1428,
+      help='The number of bytes to send each time')
   # Default 32M max buffer size. Discard anything extra if we aren't able to send.
-  parser.add_argument('-B', '--max-buffer-size', dest='max_buffer_size', default=33554432)
+  parser.add_argument('-B', '--max-buffer-size', dest='max_buffer_size',
+      default=33554432,
+      help='The maximum number of bytes to buffer when reconnecting')
   args = parser.parse_args()
 
   try:

@@ -84,8 +84,12 @@ def main():
   try:
     c = GraphiteClient(args.host, args.port, args.prefix, args.buffer_size)
     while True:
+      interval_start = time()
+
       c.send_metrics(collect_metrics())
-      sleep(float(args.interval))
+
+      interval_used = time() - interval_start
+      sleep(float(args.interval) - interval_used)
   except KeyboardInterrupt:
     c.disconnect();
 

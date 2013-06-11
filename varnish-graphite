@@ -12,13 +12,14 @@ from time import time, sleep
 
 
 class GraphiteClient:
-  sendbuf = ''
 
   def __init__(self, host='127.0.0.1', port=2003, prefix='varnish', buffer_size=1428, max_buffer_size=33554432):
     self.prefix = prefix
     self.host   = host
     self.port   = port
     self.sock   = None
+
+    self.sendbuf = ''
     self.buffer_size = buffer_size
     self.max_buffer_size = max_buffer_size
 
@@ -121,6 +122,7 @@ def main():
   parser.add_argument('-B', '--max-buffer-size', dest='max_buffer_size',
       default=33554432,
       help='The maximum number of bytes to buffer when reconnecting')
+
   args = parser.parse_args()
 
   try:

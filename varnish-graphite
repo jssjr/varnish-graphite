@@ -34,7 +34,7 @@ class GraphiteClient:
         self.sock = None
         logging.warning("Connection failed. Re-trying on the next interval")
       try:
-        self.sock.connect((self.host, self.port))
+        self.sock.connect((self.host, int(self.port)))
       except socket.error:
         self.sock.close()
         self.sock = None

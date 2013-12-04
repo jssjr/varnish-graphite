@@ -67,8 +67,8 @@ class GraphiteClient:
     self.disconnect()
     self.connect()
 
-def collect_metrics():
-  varnish_stats = json.loads(check_output(['varnishstat', '-1', '-j']))
+def collect_metrics(name):
+  varnish_stats = json.loads(check_output(['varnishstat', '-n', name, '-1', '-j']))
   timestamp = int(time())
 
   status = []
@@ -109,6 +109,10 @@ def main():
   parser.add_argument('-p', '--port',
       default=2003,
       help='The graphite server port')
+  parser.add_argument('-n', '--name',
+      default=socket.gethostname(),
+      help="""Specifies the name of the varnishd instance to get logs from. If
+           -n is not specified, the host name is used.""")
   parser.add_argument('-P', '--prefix',
       default='varnish',
       help='The prefix for metric names')
@@ -133,7 +137,7 @@ def main():
     while True:
       interval_start = time()
 
-      c.send_metrics(collect_metrics())
+      c.send_metrics(collect_metrics(args.name))
 
       interval_used = time() - interval_start
       if interval_used < float(args.interval):
